@@ -1,8 +1,7 @@
 /* Wallet Adapter Button Styles */
 
-
 .wallet-adapter-button {
-  background-color:rgb(34, 102, 230) !important;
+  background-color: rgb(34, 102, 230) !important;
   /* background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important; */
   color: var(--primary-foreground) !important;
   border: none !important;
@@ -117,7 +116,6 @@
   backdrop-filter: blur(4px) !important;
 }
 
-/* Wallet List Item Styles */
 .wallet-adapter-modal-list-item {
   background-color: #000000 !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;

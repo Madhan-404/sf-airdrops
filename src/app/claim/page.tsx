@@ -1,6 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Wallet } from "lucide-react";
+import WalletButton from "@/components/WalletButton";
 
 export default function ClaimPage() {
   return (
@@ -19,10 +18,7 @@ export default function ClaimPage() {
                 Connect your wallet to view your available claims
               </p>
             </div>
-            <Button size="lg" className="h-12 px-8 bg-primary hover:bg-primary/90">
-              <Wallet className="mr-2 h-5 w-5" />
-              Connect Wallet
-            </Button>
+            <WalletButton />
           </div>
         </CardContent>
       </Card>

@@ -3,6 +3,8 @@
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { toast } from "sonner";
 
 // Custom styles for the wallet modal
 const walletModalStyles = {
@@ -17,10 +19,17 @@ const walletModalStyles = {
 
 export default function WalletButton() {
   const [mounted, setMounted] = useState(false);
+  const { connected, publicKey } = useWallet();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (connected && publicKey) {
+      toast.success(`Connected to ${publicKey.toString().slice(0, 4)}...${publicKey.toString().slice(-4)}`);
+    }
+  }, [connected, publicKey]);
 
   if (!mounted) return null;
 

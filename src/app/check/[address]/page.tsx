@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AirdropCard } from "@/components/AirdropCard";
 import { useAirdropApi } from "@/lib/api/airdrop";
 import { AirdropItem } from "@/types/airdrop";
 import { Loading } from "@/components/ui/loading";
+
+// Cache implementation for airdrops
+const airdropCache = new Map<string, { data: AirdropItem[]; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 export default function CheckAddressPage() {
   const params = useParams();
@@ -15,19 +19,38 @@ export default function CheckAddressPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchAirdrops = useCallback(async (address: string) => {
+    // Check cache first
+    const cached = airdropCache.get(address);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      setAirdrops(cached.data);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await getClaimableAirdrops(address);
+      const items = response.items;
+      
+      // Update cache
+      airdropCache.set(address, { data: items, timestamp: Date.now() });
+      
+      setAirdrops(items);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [getClaimableAirdrops]);
+
   useEffect(() => {
     if (!params.address) return;
-
-    getClaimableAirdrops(params.address as string)
-      .then((response) => {
-        setAirdrops(response.items);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, [params.address, getClaimableAirdrops]);
+    fetchAirdrops(params.address as string);
+  }, [params.address, fetchAirdrops]);
 
   return (
     <div className="container py-10">

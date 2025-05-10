@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,30 +37,31 @@ export function AirdropCard({ airdrop }: AirdropCardProps) {
   const hasUnlockedValue = amountUnlocked > 0;
   const isDevnet = network === WalletAdapterNetwork.Devnet;
 
-  useEffect(() => {
-    const fetchTokenInfo = async () => {
-      setIsLoading(true);
-      try {
-        const name = await getTokenName(airdrop.mint);
-        setTokenName(name);
-      } catch (error) {
-        console.error('Error fetching token name:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTokenInfo();
+  // Memoize the fetch function
+  const fetchTokenInfo = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const name = await getTokenName(airdrop.mint);
+      setTokenName(name);
+    } catch (error) {
+      console.error('Error fetching token name:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }, [airdrop.mint]);
 
-  const handleCopyAddress = () => {
+  useEffect(() => {
+    fetchTokenInfo();
+  }, [fetchTokenInfo]);
+
+  const handleCopyAddress = useCallback(() => {
     navigator.clipboard.writeText(airdrop.distributorAddress);
     toast.success("Address copied to clipboard");
-  };
+  }, [airdrop.distributorAddress]);
 
-  const handleClaim = () => {
+  const handleClaim = useCallback(() => {
     router.push(`/claim/${airdrop.distributorAddress}`);
-  };
+  }, [router, airdrop.distributorAddress]);
 
   return (
     <Card 

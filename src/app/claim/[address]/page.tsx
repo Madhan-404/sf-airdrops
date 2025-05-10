@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDistributorApi } from "@/lib/api/distributor";
+import { useClaimantApi } from "@/lib/api/claimant";
 import { getTokenName, getTokenPrice } from "@/lib/token";
 import { formatNumber } from "@/lib/utils/utils";
 import { Copy } from "lucide-react";
@@ -14,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DistributorResponse } from "@/types/distributor";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { ClaimantResponse } from "@/types/claimant";
 
 const BN_DIVISOR = 1000000;
 
@@ -21,15 +23,54 @@ export default function DistributorPage() {
   const params = useParams();
   const router = useRouter();
   const { network } = useNetworkState();
-  const { connected } = useWallet();
+  const { connected, publicKey } = useWallet();
   const { getDistributorInfo } = useDistributorApi();
+  const { getClaimantInfo } = useClaimantApi();
   const [distributor, setDistributor] = useState<DistributorResponse>();
+  const [claimant, setClaimant] = useState<ClaimantResponse | null>(null);
   const [tokenName, setTokenName] = useState<string | null>(null);
   const [tokenPrice, setTokenPrice] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Redirect if not connected
+  // Memoize the distributor address
+  const distributorAddress = useMemo(() => params.address as string, [params.address]);
+
+  // Memoize the fetch functions
+  const fetchTokenInfo = useCallback(async (mint: string) => {
+    if (!mint) return;
+    
+    try {
+      // Fetch token name and price in parallel but with proper error handling
+      const namePromise = getTokenName(mint);
+      const pricePromise = network === WalletAdapterNetwork.Mainnet ? getTokenPrice(mint) : Promise.resolve(null);
+      
+      const [name, price] = await Promise.allSettled([namePromise, pricePromise]);
+      
+      if (name.status === 'fulfilled') {
+        setTokenName(name.value);
+      }
+      
+      if (price.status === 'fulfilled') {
+        setTokenPrice(price.value as number | null);
+      }
+    } catch (err) {
+      console.error('Error fetching token info:', err);
+    }
+  }, [network]);
+
+  const fetchClaimantInfo = useCallback(async () => {
+    if (!publicKey || !distributorAddress) return;
+    
+    try {
+      const claimantData = await getClaimantInfo(distributorAddress, publicKey.toString());
+      setClaimant(claimantData);
+    } catch (err) {
+      console.error('Error fetching claimant info:', err);
+    }
+  }, [getClaimantInfo, publicKey, distributorAddress]);
+
+  // Handle wallet connection
   useEffect(() => {
     if (!connected) {
       router.push('/');
@@ -37,50 +78,59 @@ export default function DistributorPage() {
     }
   }, [connected, router]);
 
-  // Memoize the fetch functions to prevent unnecessary re-renders
-  const fetchTokenInfo = useCallback(async (mint: string) => {
-    try {
-      const [name, price] = await Promise.all([
-        getTokenName(mint) as Promise<string | null>,
-        network === WalletAdapterNetwork.Mainnet ? getTokenPrice(mint) : Promise.resolve(null)
-      ]);
-      setTokenName(name);
-      setTokenPrice(price as number | null);
-    } catch (err) {
-      console.error('Error fetching token info:', err);
-    }
-  }, [network]);
-
+  // Fetch data only when necessary dependencies change
   useEffect(() => {
-    if (!params.address) return;
+    let isMounted = true;
+    let tokenFetchTimeout: NodeJS.Timeout;
 
     const fetchData = async () => {
+      if (!distributorAddress || !connected) return;
+      
+      setLoading(true);
       try {
-        const data = await getDistributorInfo(params.address as string);
+        const data = await getDistributorInfo(distributorAddress);
+        if (!isMounted) return;
+        
         setDistributor(data);
-        await fetchTokenInfo(data.mint);
+        
+        // Add a small delay before fetching token info to prevent rapid calls
+        tokenFetchTimeout = setTimeout(() => {
+          if (isMounted && data.mint) {
+            fetchTokenInfo(data.mint);
+          }
+        }, 100);
+        
+        await fetchClaimantInfo();
       } catch (err: unknown) {
+        if (!isMounted) return;
         if (err instanceof Error) {
           setError(err.message);
         } else {
           setError("An unknown error occurred");
         }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchData();
-  }, [params.address, getDistributorInfo, fetchTokenInfo]);
+
+    return () => {
+      isMounted = false;
+      if (tokenFetchTimeout) {
+        clearTimeout(tokenFetchTimeout);
+      }
+    };
+  }, [distributorAddress, connected, getDistributorInfo, fetchTokenInfo, fetchClaimantInfo]);
 
   const handleCopy = useCallback((text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} copied to clipboard`);
   }, []);
 
-  if (!connected) {
-    return null; // Don't render anything while redirecting
-  }
+  if (!connected) return null;
 
   if (loading) {
     return (
@@ -219,6 +269,25 @@ export default function DistributorPage() {
           </div>
         </CardContent>
       </Card>
+      
+      {!loading && !error && distributor && (
+        <div className="max-w-4xl mx-auto mt-4">
+          {claimant ? (
+            <div className="flex justify-center">
+              <Button 
+                className="bg-green-500 hover:bg-green-600 text-white"
+                onClick={() => {/* TODO: Implement claim functionality */}}
+              >
+                Claim Airdrop
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center text-red-500 font-medium">
+              You are not entitled to claim this airdrop. Please connect the correct wallet.
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 } 

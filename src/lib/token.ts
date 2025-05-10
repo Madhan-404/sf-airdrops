@@ -8,7 +8,7 @@ interface CacheEntry<T> {
 
 const nameCache = new Map<string, CacheEntry<string>>();
 const priceCache = new Map<string, CacheEntry<number>>();
-const CACHE_TTL = 2 * 60 * 1000; // Reduced to 2 minutes for more frequent updates
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 
 // Debounce implementation
 const debounce = <T extends (...args: Parameters<T>) => Promise<unknown>>(func: T, wait: number): T => {
@@ -21,7 +21,10 @@ const debounce = <T extends (...args: Parameters<T>) => Promise<unknown>>(func: 
   }) as T;
 };
 
-export const getTokenName = async (mintAddress: string): Promise<string | null> => {
+// Debounced version of getTokenName
+export const getTokenName = debounce(async (mintAddress: string): Promise<string | null> => {
+  if (!mintAddress) return null;
+
   // Check cache first
   const cached = nameCache.get(mintAddress);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -55,10 +58,12 @@ export const getTokenName = async (mintAddress: string): Promise<string | null> 
     console.error('Error fetching token name:', error);
     return null;
   }
-};
+}, 300); // 300ms debounce for token name
 
 // Debounced version of getTokenPrice
 export const getTokenPrice = debounce(async (mintAddress: string): Promise<number | null> => {
+  if (!mintAddress) return null;
+
   // Check cache first
   const cached = priceCache.get(mintAddress);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -81,4 +86,4 @@ export const getTokenPrice = debounce(async (mintAddress: string): Promise<numbe
     console.error('Error fetching token price:', error);
     return null;
   }
-}, 200); // Reduced from 500ms to 200ms 
+}, 200); 

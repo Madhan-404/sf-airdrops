@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDistributorApi } from "@/lib/api/distributor";
 import { getTokenName, getTokenPrice } from "@/lib/token";
@@ -13,18 +13,29 @@ import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DistributorResponse } from "@/types/distributor";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 const BN_DIVISOR = 1000000;
 
 export default function DistributorPage() {
   const params = useParams();
+  const router = useRouter();
   const { network } = useNetworkState();
+  const { connected } = useWallet();
   const { getDistributorInfo } = useDistributorApi();
   const [distributor, setDistributor] = useState<DistributorResponse>();
   const [tokenName, setTokenName] = useState<string | null>(null);
   const [tokenPrice, setTokenPrice] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Redirect if not connected
+  useEffect(() => {
+    if (!connected) {
+      router.push('/');
+      toast.error("Please connect your wallet to view this page");
+    }
+  }, [connected, router]);
 
   // Memoize the fetch functions to prevent unnecessary re-renders
   const fetchTokenInfo = useCallback(async (mint: string) => {
@@ -67,6 +78,10 @@ export default function DistributorPage() {
     toast.success(`${label} copied to clipboard`);
   }, []);
 
+  if (!connected) {
+    return null; // Don't render anything while redirecting
+  }
+
   if (loading) {
     return (
       <div className="container py-10">
@@ -98,6 +113,13 @@ export default function DistributorPage() {
   const maxTotal = parseFloat(distributor.maxTotalClaim) / BN_DIVISOR;
   const unlockedPercentage = (totalUnlocked / maxTotal) * 100;
 
+  // Determine airdrop type
+  const getAirdropType = () => {
+    if (totalUnlocked === maxTotal) return "Instant";
+    if (totalUnlocked === 0) return "Yet to start";
+    return "Vested";
+  };
+
   return (
     <div className="container py-10">
       <Card className="max-w-4xl mx-auto">
@@ -113,6 +135,9 @@ export default function DistributorPage() {
               </Badge>
               <Badge variant={distributor.isOnChain ? "success" : "destructive"}>
                 {distributor.isOnChain ? "On Chain" : "Off Chain"}
+              </Badge>
+              <Badge variant="outline" className="border-primary text-primary">
+                Type: {getAirdropType()}
               </Badge>
             </div>
           </div>

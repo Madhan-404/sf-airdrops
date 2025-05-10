@@ -7,22 +7,25 @@ import { AirdropCard } from "@/components/AirdropCard";
 import { useAirdropApi } from "@/lib/api/airdrop";
 import { AirdropItem } from "@/types/airdrop";
 import { Loading } from "@/components/ui/loading";
+import { useNetworkState } from "@/hooks/useNetworkState";
 
 // Cache implementation for airdrops
-const airdropCache = new Map<string, { data: AirdropItem[]; timestamp: number }>();
+const airdropCache = new Map<string, { data: AirdropItem[]; timestamp: number; network: string }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 export default function CheckAddressPage() {
   const params = useParams();
+  const { network } = useNetworkState();
   const { getClaimableAirdrops } = useAirdropApi();
   const [airdrops, setAirdrops] = useState<AirdropItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchAirdrops = useCallback(async (address: string) => {
-    // Check cache first
-    const cached = airdropCache.get(address);
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    // Check cache first with network consideration
+    const cacheKey = `${address}-${network}`;
+    const cached = airdropCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL && cached.network === network) {
       setAirdrops(cached.data);
       setLoading(false);
       return;
@@ -32,8 +35,12 @@ export default function CheckAddressPage() {
       const response = await getClaimableAirdrops(address);
       const items = response.items;
       
-      // Update cache
-      airdropCache.set(address, { data: items, timestamp: Date.now() });
+      // Update cache with network info
+      airdropCache.set(cacheKey, { 
+        data: items, 
+        timestamp: Date.now(),
+        network 
+      });
       
       setAirdrops(items);
     } catch (err) {
@@ -45,12 +52,13 @@ export default function CheckAddressPage() {
     } finally {
       setLoading(false);
     }
-  }, [getClaimableAirdrops]);
+  }, [getClaimableAirdrops, network]);
 
   useEffect(() => {
     if (!params.address) return;
+    setLoading(true); // Show loading when network changes
     fetchAirdrops(params.address as string);
-  }, [params.address, fetchAirdrops]);
+  }, [params.address, fetchAirdrops, network]); // Added network as dependency
 
   return (
     <div className="container py-10">

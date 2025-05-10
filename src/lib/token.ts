@@ -8,7 +8,7 @@ interface CacheEntry<T> {
 
 const nameCache = new Map<string, CacheEntry<string>>();
 const priceCache = new Map<string, CacheEntry<number>>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 2 * 60 * 1000; // Reduced to 2 minutes for more frequent updates
 
 // Debounce implementation
 const debounce = <T extends (...args: Parameters<T>) => Promise<unknown>>(func: T, wait: number): T => {
@@ -30,7 +30,6 @@ export const getTokenName = async (mintAddress: string): Promise<string | null> 
 
   try {
     const url = `https://grateful-jerrie-fast-mainnet.helius-rpc.com`;
-
     const response = await axios.post(url, {
       jsonrpc: '2.0',
       id: 'my-id',
@@ -82,4 +81,4 @@ export const getTokenPrice = debounce(async (mintAddress: string): Promise<numbe
     console.error('Error fetching token price:', error);
     return null;
   }
-}, 500); // 500ms debounce 
+}, 200); // Reduced from 500ms to 200ms 

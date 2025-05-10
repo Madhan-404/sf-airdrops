@@ -1,14 +1,13 @@
 import axios from 'axios';
 
-// Cache implementation for token data
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
+interface JupiterTokenV1 {
+  address: string;
+  name: string;
+  symbol: string;
 }
 
-const nameCache = new Map<string, CacheEntry<string>>();
-const priceCache = new Map<string, CacheEntry<number>>();
-const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+const priceCache = new Map<string, { data: number; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Debounce implementation
 const debounce = <T extends (...args: Parameters<T>) => Promise<unknown>>(func: T, wait: number): T => {
@@ -21,44 +20,18 @@ const debounce = <T extends (...args: Parameters<T>) => Promise<unknown>>(func: 
   }) as T;
 };
 
-// Debounced version of getTokenName
-export const getTokenName = debounce(async (mintAddress: string): Promise<string | null> => {
+export async function getTokenName(mintAddress: string): Promise<string | null> {
   if (!mintAddress) return null;
-
-  // Check cache first
-  const cached = nameCache.get(mintAddress);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-    return cached.data;
-  }
-
   try {
-    const url = `https://grateful-jerrie-fast-mainnet.helius-rpc.com`;
-    const response = await axios.post(url, {
-      jsonrpc: '2.0',
-      id: 'my-id',
-      method: 'getAsset',
-      params: {
-        id: mintAddress,
-        displayOptions: {
-          showFungible: true,
-        },
-      },
-    });
-
-    const { result } = response.data;
-    const tokenName = result?.token_info?.symbol || null;
-    
-    // Update cache
-    if (tokenName) {
-      nameCache.set(mintAddress, { data: tokenName, timestamp: Date.now() });
-    }
-
-    return tokenName;
+    const response = await fetch(`https://lite-api.jup.ag/tokens/v1/token/${mintAddress}`);
+    if (!response.ok) return null;
+    const token: JupiterTokenV1 = await response.json();
+    return token.symbol || null;
   } catch (error) {
-    console.error('Error fetching token name:', error);
+    console.error("Error fetching token name:", error);
     return null;
   }
-}, 300); // 300ms debounce for token name
+}
 
 // Debounced version of getTokenPrice
 export const getTokenPrice = debounce(async (mintAddress: string): Promise<number | null> => {

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,6 @@ export function AirdropCard({ airdrop }: AirdropCardProps) {
   const router = useRouter();
   const { network } = useNetworkState();
   const [tokenName, setTokenName] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Convert BN values to normal numbers
   const amountUnlocked = parseFloat(airdrop.amountUnlocked) / BN_DIVISOR;
@@ -37,31 +36,24 @@ export function AirdropCard({ airdrop }: AirdropCardProps) {
   const hasUnlockedValue = amountUnlocked > 0;
   const isDevnet = network === WalletAdapterNetwork.Devnet;
 
-  // Memoize the fetch function
-  const fetchTokenInfo = useCallback(async () => {
-    setIsLoading(true);
-    try {
+  useEffect(() => {
+    let ignore = false;
+    async function fetchName() {
       const name = await getTokenName(airdrop.mint);
-      setTokenName(name);
-    } catch (error) {
-      console.error('Error fetching token name:', error);
-    } finally {
-      setIsLoading(false);
+      if (!ignore) setTokenName(name);
     }
+    fetchName();
+    return () => { ignore = true; };
   }, [airdrop.mint]);
 
-  useEffect(() => {
-    fetchTokenInfo();
-  }, [fetchTokenInfo]);
-
-  const handleCopyAddress = useCallback(() => {
+  const handleCopyAddress = () => {
     navigator.clipboard.writeText(airdrop.distributorAddress);
     toast.success("Address copied to clipboard");
-  }, [airdrop.distributorAddress]);
+  };
 
-  const handleClaim = useCallback(() => {
+  const handleClaim = () => {
     router.push(`/claim/${airdrop.distributorAddress}`);
-  }, [router, airdrop.distributorAddress]);
+  };
 
   return (
     <Card 
@@ -75,7 +67,7 @@ export function AirdropCard({ airdrop }: AirdropCardProps) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold">
-            {isLoading ? "Loading..." : tokenName || airdrop.mint.slice(0, 8) + "..." + airdrop.mint.slice(-8)}
+            {tokenName || (airdrop.mint.slice(0, 8) + "..." + airdrop.mint.slice(-8))}
           </CardTitle>
           {hasClaimableValue && !isDevnet && (
             <span className="text-lg font-semibold text-green-500">

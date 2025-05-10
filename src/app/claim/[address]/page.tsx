@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDistributorApi } from "@/lib/api/distributor";
 import { getTokenName, getTokenPrice } from "@/lib/token";
-import { formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils/utils";
 import { Copy } from "lucide-react";
 import { toast } from "sonner";
 import { useNetworkState } from "@/hooks/useNetworkState";

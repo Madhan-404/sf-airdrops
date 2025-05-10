@@ -11,7 +11,7 @@ const priceCache = new Map<string, CacheEntry<number>>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Debounce implementation
-const debounce = <T extends (...args: unknown[]) => Promise<unknown>>(func: T, wait: number): T => {
+const debounce = <T extends (...args: Parameters<T>) => Promise<unknown>>(func: T, wait: number): T => {
   let timeout: NodeJS.Timeout;
   return ((...args: Parameters<T>) => {
     clearTimeout(timeout);

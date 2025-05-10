@@ -2,7 +2,7 @@
 
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { toast } from "sonner";
 

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Wallet } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -16,10 +17,10 @@ export default function Home() {
 
         <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
           <Button size="lg" className="h-12 px-8 bg-primary hover:bg-primary/90" asChild>
-            <a href="/check">
+            <Link href="/check">
               <CheckCircle className="mr-2 h-5 w-5" />
               Check Eligibility
-            </a>
+            </Link>
           </Button>
           <Button
             size="lg"
@@ -27,10 +28,10 @@ export default function Home() {
             className="h-12 px-8 border-primary text-primary hover:bg-primary/10"
             asChild
           >
-            <a href="/claim">
+            <Link href="/claim">
               <Wallet className="mr-2 h-5 w-5" />
               Claim Airdrop
-            </a>
+            </Link>
           </Button>
         </div>
       </div>

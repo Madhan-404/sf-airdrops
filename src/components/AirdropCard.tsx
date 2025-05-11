@@ -71,7 +71,7 @@ export function AirdropCard({ airdrop }: AirdropCardProps) {
           </CardTitle>
           {hasClaimableValue && !isDevnet && (
             <span className="text-lg font-semibold text-green-500">
-              ${formatNumber(claimableValue)}
+              ${formatNumber(claimableValue,1)}
             </span>
           )}
         </div>
@@ -80,18 +80,18 @@ export function AirdropCard({ airdrop }: AirdropCardProps) {
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Unlocked Progress</span>
-            <span className="font-medium">{formatNumber(unlockedPercentage)}%</span>
+            <span className="font-medium">{formatNumber(unlockedPercentage,1)}%</span>
           </div>
           <Progress value={unlockedPercentage} className="h-2" />
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">
-              {formatNumber(amountUnlocked)} / {formatNumber(totalUnlocked)}
+              {formatNumber(amountUnlocked,1)} / {formatNumber(totalUnlocked,1)}
             </span>
           </div>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Amount Claimed</span>
-          <span className="font-medium">{formatNumber(amountClaimed)}</span>
+          <span className="font-medium">{formatNumber(amountClaimed,1)}</span>
         </div>
 
         <div className="flex items-center justify-between pt-2">

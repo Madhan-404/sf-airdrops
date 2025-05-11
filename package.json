@@ -17,6 +17,8 @@
     "@solana/wallet-adapter-react-ui": "^0.9.38",
     "@solana/wallet-adapter-wallets": "^0.19.36",
     "@solana/web3.js": "^1.98.2",
+    "@streamflow/common": "^7.5.3",
+    "@streamflow/distributor": "^7.5.3",
     "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -32,6 +34,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/bn.js": "^5.1.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

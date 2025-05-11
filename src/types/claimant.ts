@@ -6,4 +6,4 @@ export interface ClaimantResponse {
   amountUnlocked: string;
   address: string;
   amountLocked: string;
-} 
+}

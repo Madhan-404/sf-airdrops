@@ -27,7 +27,9 @@ export default function WalletButton() {
 
   useEffect(() => {
     if (connected && publicKey) {
-      toast.success(`Connected to ${publicKey.toString().slice(0, 4)}...${publicKey.toString().slice(-4)}`);
+      toast.success(
+        `Connected to ${publicKey.toString().slice(0, 4)}...${publicKey.toString().slice(-4)}`,
+      );
     }
   }, [connected, publicKey]);
 

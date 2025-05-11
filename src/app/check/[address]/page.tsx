@@ -21,38 +21,41 @@ export default function CheckAddressPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchAirdrops = useCallback(async (address: string) => {
-    // Check cache first with network consideration
-    const cacheKey = `${address}-${network}`;
-    const cached = airdropCache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL && cached.network === network) {
-      setAirdrops(cached.data);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await getClaimableAirdrops(address);
-      const items = response.items;
-      
-      // Update cache with network info
-      airdropCache.set(cacheKey, { 
-        data: items, 
-        timestamp: Date.now(),
-        network 
-      });
-      
-      setAirdrops(items);
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An unknown error occurred");
+  const fetchAirdrops = useCallback(
+    async (address: string) => {
+      // Check cache first with network consideration
+      const cacheKey = `${address}-${network}`;
+      const cached = airdropCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < CACHE_TTL && cached.network === network) {
+        setAirdrops(cached.data);
+        setLoading(false);
+        return;
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [getClaimableAirdrops, network]);
+
+      try {
+        const response = await getClaimableAirdrops(address);
+        const items = response.items;
+
+        // Update cache with network info
+        airdropCache.set(cacheKey, {
+          data: items,
+          timestamp: Date.now(),
+          network,
+        });
+
+        setAirdrops(items);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unknown error occurred");
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [getClaimableAirdrops, network],
+  );
 
   useEffect(() => {
     if (!params.address) return;

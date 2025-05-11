@@ -27,12 +27,12 @@ export function useDistributorApi() {
     }
 
     const data = await response.json();
-    
+
     // Update cache
     cache.set(address, { data, timestamp: Date.now() });
-    
+
     return data;
   };
 
   return { getDistributorInfo };
-} 
+}

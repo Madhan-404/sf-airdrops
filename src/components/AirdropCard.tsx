@@ -43,7 +43,9 @@ export function AirdropCard({ airdrop }: AirdropCardProps) {
       if (!ignore) setTokenName(name);
     }
     fetchName();
-    return () => { ignore = true; };
+    return () => {
+      ignore = true;
+    };
   }, [airdrop.mint]);
 
   const handleCopyAddress = () => {
@@ -56,22 +58,24 @@ export function AirdropCard({ airdrop }: AirdropCardProps) {
   };
 
   return (
-    <Card 
+    <Card
       className={cn(
         "w-full transition-all duration-300 hover:shadow-lg",
-        hasClaimableValue ? "border-green-500/50 hover:border-green-500" :
-        hasUnlockedValue ? "border-yellow-500/50 hover:border-yellow-500" :
-        "border-red-500/50 hover:border-red-500"
+        hasClaimableValue
+          ? "border-green-500/50 hover:border-green-500"
+          : hasUnlockedValue
+            ? "border-yellow-500/50 hover:border-yellow-500"
+            : "border-red-500/50 hover:border-red-500",
       )}
     >
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold">
-            {tokenName || (airdrop.mint.slice(0, 8) + "..." + airdrop.mint.slice(-8))}
+            {tokenName || airdrop.mint.slice(0, 8) + "..." + airdrop.mint.slice(-8)}
           </CardTitle>
           {hasClaimableValue && !isDevnet && (
             <span className="text-lg font-semibold text-green-500">
-              ${formatNumber(claimableValue,1)}
+              ${formatNumber(claimableValue, 1)}
             </span>
           )}
         </div>
@@ -80,18 +84,18 @@ export function AirdropCard({ airdrop }: AirdropCardProps) {
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Unlocked Progress</span>
-            <span className="font-medium">{formatNumber(unlockedPercentage,1)}%</span>
+            <span className="font-medium">{formatNumber(unlockedPercentage, 1)}%</span>
           </div>
           <Progress value={unlockedPercentage} className="h-2" />
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">
-              {formatNumber(amountUnlocked,1)} / {formatNumber(totalUnlocked,1)}
+              {formatNumber(amountUnlocked, 1)} / {formatNumber(totalUnlocked, 1)}
             </span>
           </div>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Amount Claimed</span>
-          <span className="font-medium">{formatNumber(amountClaimed,1)}</span>
+          <span className="font-medium">{formatNumber(amountClaimed, 1)}</span>
         </div>
 
         <div className="flex items-center justify-between pt-2">
@@ -105,13 +109,15 @@ export function AirdropCard({ airdrop }: AirdropCardProps) {
             <Copy className="h-4 w-4 mr-2" />
             {airdrop.distributorAddress.slice(0, 4)}...{airdrop.distributorAddress.slice(-4)}
           </Button>
-          
+
           {(hasClaimableValue || hasUnlockedValue) && (
-            <Button 
+            <Button
               onClick={handleClaim}
               className={cn(
                 "bg-green-500 hover:bg-green-600",
-                hasClaimableValue ? "bg-green-500 hover:bg-green-600" : "bg-yellow-500 hover:bg-yellow-600"
+                hasClaimableValue
+                  ? "bg-green-500 hover:bg-green-600"
+                  : "bg-yellow-500 hover:bg-yellow-600",
               )}
             >
               Claim

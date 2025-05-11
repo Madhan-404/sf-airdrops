@@ -37,19 +37,19 @@ export default function DistributorPage() {
   // Fetch all data in a single function
   const fetchData = useCallback(async () => {
     if (!memoizedAddress || !connected || !memoizedPublicKey) return;
-    
+
     try {
       setLoading(true);
       setError(null);
       const [distributorData, claimantData] = await Promise.all([
         getDistributorInfo(memoizedAddress),
-        getClaimantInfo(memoizedAddress, memoizedPublicKey)
+        getClaimantInfo(memoizedAddress, memoizedPublicKey),
       ]);
       setDistributor(distributorData);
       setClaimant(claimantData);
     } catch (err: unknown) {
-      console.error('Error fetching data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch data');
+      console.error("Error fetching data:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch data");
     } finally {
       setLoading(false);
     }
@@ -58,7 +58,7 @@ export default function DistributorPage() {
   // Handle wallet connection
   useEffect(() => {
     if (!connected) {
-      router.push('/');
+      router.push("/");
       toast.error("Please connect your wallet to view this page");
     }
   }, [connected, router]);
@@ -124,7 +124,9 @@ export default function DistributorPage() {
           <>
             <CardHeader className="space-y-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl font-bold text-primary">{distributor.name}</CardTitle>
+                <CardTitle className="text-2xl font-bold text-primary">
+                  {distributor.name}
+                </CardTitle>
                 <div className="flex gap-2">
                   <Badge variant={distributor.isVerified ? "success" : "destructive"}>
                     {distributor.isVerified ? "Verified" : "Unverified"}
@@ -136,9 +138,11 @@ export default function DistributorPage() {
                     {distributor.isOnChain ? "On Chain" : "Off Chain"}
                   </Badge>
                   <Badge variant="outline">
-                    {parseFloat(distributor.totalAmountUnlocked) === parseFloat(distributor.maxTotalClaim) 
-                      ? "Instant" 
-                      : parseFloat(distributor.totalAmountLocked) === parseFloat(distributor.maxTotalClaim)
+                    {parseFloat(distributor.totalAmountUnlocked) ===
+                    parseFloat(distributor.maxTotalClaim)
+                      ? "Instant"
+                      : parseFloat(distributor.totalAmountLocked) ===
+                          parseFloat(distributor.maxTotalClaim)
                         ? "Yet to be Unlocked"
                         : parseFloat(distributor.totalAmountUnlocked) > 0
                           ? "Instant"
@@ -160,7 +164,9 @@ export default function DistributorPage() {
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <span className="font-bold text-primary">Recipients:</span>
-                <span className="font-medium">{formatNumber(parseInt(distributor.maxNumNodes), 0)}</span>
+                <span className="font-medium">
+                  {formatNumber(parseInt(distributor.maxNumNodes), 0)}
+                </span>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -207,15 +213,24 @@ export default function DistributorPage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-primary">Total Unlocked</span>
-                        <span className="font-medium">{formatNumber(parseFloat(distributor.totalAmountUnlocked) / BN_DIVISOR, 2)}</span>
+                        <span className="font-medium">
+                          {formatNumber(
+                            parseFloat(distributor.totalAmountUnlocked) / BN_DIVISOR,
+                            2,
+                          )}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-primary">Total Locked</span>
-                        <span className="font-medium">{formatNumber(parseFloat(distributor.totalAmountLocked) / BN_DIVISOR, 2)}</span>
+                        <span className="font-medium">
+                          {formatNumber(parseFloat(distributor.totalAmountLocked) / BN_DIVISOR, 2)}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-primary">Max Total Claim</span>
-                        <span className="font-medium">{formatNumber(parseFloat(distributor.maxTotalClaim) / BN_DIVISOR, 2)}</span>
+                        <span className="font-medium">
+                          {formatNumber(parseFloat(distributor.maxTotalClaim) / BN_DIVISOR, 2)}
+                        </span>
                       </div>
                     </div>
                   </CardContent>
@@ -225,7 +240,7 @@ export default function DistributorPage() {
           </>
         )}
       </Card>
-      
+
       {!loading && !error && distributor && (
         <div className="max-w-4xl mx-auto mt-4 space-y-4">
           {claimant && (
@@ -237,24 +252,30 @@ export default function DistributorPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-primary">Your Claimable Amount</span>
-                    <span className="font-medium">{formatNumber(parseFloat(claimant.amountUnlocked) / BN_DIVISOR, 2)}</span>
+                    <span className="font-medium">
+                      {formatNumber(parseFloat(claimant.amountUnlocked) / BN_DIVISOR, 2)}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-primary">Locked Amount</span>
-                    <span className="font-medium">{formatNumber(parseFloat(claimant.amountLocked) / BN_DIVISOR, 2)}</span>
+                    <span className="font-medium">
+                      {formatNumber(parseFloat(claimant.amountLocked) / BN_DIVISOR, 2)}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-primary">Amount Already Claimed</span>
-                    <span className="font-medium">{formatNumber(parseFloat(claimant.amountClaimed) / BN_DIVISOR, 2)}</span>
+                    <span className="font-medium">
+                      {formatNumber(parseFloat(claimant.amountClaimed) / BN_DIVISOR, 2)}
+                    </span>
                   </div>
                 </div>
               </CardContent>
             </Card>
           )}
-          
+
           {claimant ? (
             <div className="flex justify-center">
-              <Button 
+              <Button
                 className="bg-green-500 hover:bg-green-600 text-white"
                 onClick={handleClaim}
                 disabled={isClaiming}
@@ -278,4 +299,4 @@ export default function DistributorPage() {
       )}
     </div>
   );
-} 
+}

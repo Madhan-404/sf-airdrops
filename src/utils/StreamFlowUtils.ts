@@ -8,12 +8,11 @@ import { useNetworkState } from "../hooks/useNetworkState";
 
 // Initialize Streamflow client based on network
 const getClient = (network: WalletAdapterNetwork) => {
-  const clusterUrl = network === WalletAdapterNetwork.Mainnet
-    ? "https://mainnet.helius-rpc.com/?api-key=24084da3-e262-4410-9a02-774ee04b1f22"
-    : "https://devnet.helius-rpc.com/?api-key=24084da3-e262-4410-9a02-774ee04b1f22";
-  const cluster = network === WalletAdapterNetwork.Mainnet
-    ? ICluster.Mainnet
-    : ICluster.Devnet;
+  const clusterUrl =
+    network === WalletAdapterNetwork.Mainnet
+      ? "https://mainnet.helius-rpc.com/?api-key=24084da3-e262-4410-9a02-774ee04b1f22"
+      : "https://devnet.helius-rpc.com/?api-key=24084da3-e262-4410-9a02-774ee04b1f22";
+  const cluster = network === WalletAdapterNetwork.Mainnet ? ICluster.Mainnet : ICluster.Devnet;
 
   return new SolanaDistributorClient({
     clusterUrl,
@@ -45,7 +44,7 @@ export const createClaimParams = (claimantData: ClaimantResponse): IClaimData =>
 
 export const claimAirdrop = async (
   claimantData: ClaimantResponse,
-  walletAdapter: SignerWalletAdapter
+  walletAdapter: SignerWalletAdapter,
 ): Promise<ITransactionResult> => {
   if (!walletAdapter.publicKey) {
     throw new Error("Wallet not connected");
@@ -53,12 +52,13 @@ export const claimAirdrop = async (
 
   const network = useNetworkState.getState().network;
   console.log("Current Network:", network);
-  
+
   // Get a fresh client instance with current network
   const client = getClient(network);
-  console.log("Using RPC:", network === WalletAdapterNetwork.Mainnet 
-    ? "mainnet.helius-rpc.com" 
-    : "devnet.helius-rpc.com");
+  console.log(
+    "Using RPC:",
+    network === WalletAdapterNetwork.Mainnet ? "mainnet.helius-rpc.com" : "devnet.helius-rpc.com",
+  );
   console.log("Distributor Address:", claimantData.distributorAddress);
   console.log("Wallet Public Key:", walletAdapter.publicKey.toString());
 
@@ -78,14 +78,14 @@ export const claimAirdrop = async (
     }
     console.log("Claim result:", {
       txId: result.txId,
-      ixs: result.ixs.map(i => ({
+      ixs: result.ixs.map((i) => ({
         programId: i.programId.toBase58(),
-        keys: i.keys.map(k => ({
+        keys: i.keys.map((k) => ({
           pubkey: k.pubkey.toBase58(),
           isSigner: k.isSigner,
           isWritable: k.isWritable,
         })),
-        data: i.data.toString('hex'),
+        data: i.data.toString("hex"),
       })),
     });
     return result as ITransactionResult;
@@ -96,9 +96,11 @@ export const claimAirdrop = async (
       console.error("Error details:", {
         message: error.message,
         stack: error.stack,
-        name: error.name
+        name: error.name,
       });
     }
-    throw new Error(`Claim airdrop failed: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(
+      `Claim airdrop failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 };

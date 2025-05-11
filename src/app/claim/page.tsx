@@ -28,9 +28,7 @@ export default function ClaimPage() {
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-primary">Check Distributor</CardTitle>
-          <CardDescription>
-            Enter a distributor address to view its details
-          </CardDescription>
+          <CardDescription>Enter a distributor address to view its details</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

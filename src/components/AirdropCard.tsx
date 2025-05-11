@@ -30,7 +30,7 @@ export function AirdropCard({ airdrop }: AirdropCardProps) {
   const claimableValue = parseFloat(airdrop.claimableValue);
 
   const totalUnlocked = amountUnlocked + amountLocked;
-  const unlockedPercentage = (amountUnlocked / totalUnlocked) * 100;
+  const unlockedPercentage = ((amountUnlocked + amountClaimed) / totalUnlocked) * 100;
 
   const hasClaimableValue = claimableValue > 0;
   const hasUnlockedValue = amountUnlocked > 0;

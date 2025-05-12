@@ -1,17 +1,24 @@
 import { ICluster, ITransactionResult } from "@streamflow/common";
 import { IInteractSolanaExt, SolanaDistributorClient } from "@streamflow/distributor/solana";
 import { WalletAdapterNetwork, SignerWalletAdapter } from "@solana/wallet-adapter-base";
-import { ClaimantResponse } from "../types/claimant";
+import { ClaimantResponse } from "../../types/claimant";
 import BN from "bn.js";
 import { IClaimData } from "@streamflow/distributor/solana";
-import { useNetworkState } from "../hooks/useNetworkState";
+import { useNetworkState } from "../../hooks/useNetworkState";
 
 // Initialize Streamflow client based on network
 const getClient = (network: WalletAdapterNetwork) => {
+  const mainnetApiKey = process.env.NEXT_PUBLIC_HELIUS_MAINNET_API_KEY;
+  const devnetApiKey = process.env.NEXT_PUBLIC_HELIUS_DEVNET_API_KEY;
+
+  if (!mainnetApiKey || !devnetApiKey) {
+    throw new Error("Helius API keys are not configured in environment variables");
+  }
+
   const clusterUrl =
     network === WalletAdapterNetwork.Mainnet
-      ? "https://mainnet.helius-rpc.com/?api-key=24084da3-e262-4410-9a02-774ee04b1f22"
-      : "https://devnet.helius-rpc.com/?api-key=24084da3-e262-4410-9a02-774ee04b1f22";
+      ? `https://mainnet.helius-rpc.com/?api-key=${mainnetApiKey}`
+      : `https://devnet.helius-rpc.com/?api-key=${devnetApiKey}`;
   const cluster = network === WalletAdapterNetwork.Mainnet ? ICluster.Mainnet : ICluster.Devnet;
 
   return new SolanaDistributorClient({
@@ -89,7 +96,7 @@ export const claimAirdrop = async (
       })),
     });
     return result as ITransactionResult;
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Claim airdrop failed:", error);
     // Add more detailed error information
     if (error instanceof Error) {

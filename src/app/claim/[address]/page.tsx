@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { DistributorResponse } from "@/types/distributor";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { ClaimantResponse } from "@/types/claimant";
-import { claimAirdrop } from "@/utils/StreamFlowUtils";
+import { claimAirdrop } from "@/lib/utils/StreamFlowUtils";
 import { SignerWalletAdapter } from "@solana/wallet-adapter-base";
 
 const BN_DIVISOR = 1000000;
@@ -107,7 +107,7 @@ export default function DistributorPage() {
 
   return (
     <div className="container py-10">
-      <Card className="max-w-4xl mx-auto">
+      <Card className="max-w-6xl mx-auto">
         {loading ? (
           <CardContent className="flex items-center justify-center py-20">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -137,6 +137,7 @@ export default function DistributorPage() {
                   <Badge variant={distributor.isOnChain ? "success" : "destructive"}>
                     {distributor.isOnChain ? "On Chain" : "Off Chain"}
                   </Badge>
+                  {distributor.isAligned && <Badge variant="outline">Price Aligned Unlocks</Badge>}
                   <Badge variant="outline">
                     {parseFloat(distributor.totalAmountUnlocked) ===
                     parseFloat(distributor.maxTotalClaim)
